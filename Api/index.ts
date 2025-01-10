@@ -3,6 +3,7 @@ import usersRouter from './routers/users';
 import config from "./config";
 
 import * as mongoose from "mongoose";
+import tasksRouter from "./routers/tasks";
 
 
 
@@ -14,10 +15,10 @@ app.use(express.json());
 
 app.use('/users', usersRouter);
 
-// app.use('/tasks', tasksRouter);
+app.use('/tasks', tasksRouter);
 
 const run = async () => {
-await mongoose.connect(config.db);
+    await mongoose.connect(config.db);
 
     app.listen(port, () => {
         console.log(`Server started on port http://localhost:${port}`);
