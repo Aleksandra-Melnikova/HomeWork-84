@@ -39,15 +39,31 @@ tasksRouter.get('/',auth, async (req, res, next) => {
         const tasks = await Task.find({user:user._id});
         res.send(tasks);
     }     catch (error) {
-        // if(error instanceof mongoose.Error.ValidationError){
-        //     const ValidationErrors = Object.keys(error.errors).map(key =>({
-        //         field: key,
-        //         message: error.errors[key].message,
-        //     }));
-        //     res.status(400).send({errors: ValidationErrors});
-        // }
         next(error);
     }
 });
-tasksRouter.delete
+
+tasksRouter.delete('/:id',auth, async (req, res, next) => {
+    try{
+        let expressReq = req as RequestWithUser
+        const user = expressReq.user;
+        const task = await Task.findById(req.params.id);
+
+        if (!task) {
+            res.status(404).send({error: 'Not found'});
+
+        }
+        else if(task.user.toString() !== user._id.toString()) {
+            res.status(403).send({error:"You are trying to delete someone else's task"});
+
+        }
+        else{
+            await Task.deleteOne({_id: req.params.id});
+            res.send({message: "Task deleted successfully."});
+        }
+
+    }catch(error){
+        next(error);
+    }
+})
 export default tasksRouter;
