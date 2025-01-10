@@ -1,6 +1,7 @@
 import auth, {RequestWithUser} from "../middlewear/auth";
 import express from "express";
 import Task from "../models/Task";
+import mongoose from "mongoose";
 
 const tasksRouter = express.Router();
 tasksRouter.post('/', auth, async (req, res, next) => {
@@ -19,10 +20,16 @@ tasksRouter.post('/', auth, async (req, res, next) => {
         res.send(task);
     }
 
-    catch (e) {
-        next(e);
+    catch (error) {
+        if(error instanceof mongoose.Error.ValidationError){
+        const ValidationErrors = Object.keys(error.errors).map(key =>({
+            field: key,
+            message: error.errors[key].message,
+        }));
+        res.status(400).send({errors: ValidationErrors});
     }
-
+        next(error);
+    }
 });
 
 tasksRouter.get('/',auth, async (req, res, next) => {
@@ -31,8 +38,16 @@ tasksRouter.get('/',auth, async (req, res, next) => {
         const user = expressReq.user;
         const tasks = await Task.find({user:user._id});
         res.send(tasks);
-    } catch (e) {
-        next(e);
+    }     catch (error) {
+        // if(error instanceof mongoose.Error.ValidationError){
+        //     const ValidationErrors = Object.keys(error.errors).map(key =>({
+        //         field: key,
+        //         message: error.errors[key].message,
+        //     }));
+        //     res.status(400).send({errors: ValidationErrors});
+        // }
+        next(error);
     }
 });
+tasksRouter.delete
 export default tasksRouter;
