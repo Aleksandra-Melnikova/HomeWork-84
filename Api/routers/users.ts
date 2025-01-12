@@ -39,15 +39,4 @@ usersRouter.post('/sessions', async (req, res) => {
     res.send({message: 'Username and password correct!', user});
 });
 
-// usersRouter.post('/secret', auth, async (req, res) => {
-//     let expressReq = req as RequestWithUser
-//     const user = expressReq.user;
-//
-//      res.send({
-//          message: 'Secret message',
-//          user: user
-//     });
-//
-// });
-
 export default usersRouter;
