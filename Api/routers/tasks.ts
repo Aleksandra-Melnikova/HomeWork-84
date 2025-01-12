@@ -51,7 +51,6 @@ tasksRouter.delete('/:id',auth, async (req, res, next) => {
 
         if (!task) {
             res.status(404).send({error: 'Not found'});
-
         }
         else if(task.user.toString() !== user._id.toString()) {
             res.status(403).send({error:"You are trying to delete someone else's task"});
@@ -65,5 +64,38 @@ tasksRouter.delete('/:id',auth, async (req, res, next) => {
     }catch(error){
         next(error);
     }
-})
+});
+
+tasksRouter.put('/:id',auth, async (req, res,next) => {
+    try {
+        let expressReq = req as RequestWithUser
+        const user = expressReq.user;
+        const task = await Task.findById(req.params.id);
+
+        if (!task) {
+            res.status(404).send({error: 'Not found'});
+        }
+        else if(task.user.toString() !== user._id.toString()) {
+            res.status(403).send({error:"You are trying to put someone else's task"});
+
+        }
+        else{
+            const taskNew  = await Task.findByIdAndUpdate(req.params.id,{title:req.body.title,description:req.body.description,status:req.body.status},{new: true})
+            if(taskNew){ await taskNew.save();}
+            res.send(taskNew);
+        }
+    }
+    catch (error)
+    {  if(error instanceof mongoose.Error.ValidationError){
+        const ValidationErrors = Object.keys(error.errors).map(key =>({
+            field: key,
+            message: error.errors[key].message,
+        }));
+        res.status(400).send({errors: ValidationErrors});
+    }
+        next(error);
+
+    }
+});
+
 export default tasksRouter;
